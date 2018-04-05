@@ -7,7 +7,10 @@
 T_iterator::T_iterator(const std::string& name, std::fstream::openmode mode) :
     filename(name),
         file((name == "") ? (new std::ifstream()) : (new std::ifstream(name, mode))),
-            cur(file->get()), pos(file->tellg()) {}
+            cur(file->get()), pos(file->tellg()) {
+
+    if (name != "" && !file->is_open()) throw std::ios_base::failure("Not opened");
+}
 
 T_iterator::T_iterator(T_iterator && other) :
     filename(other.filename), file(other.file), cur(other.cur), pos(other.pos) {

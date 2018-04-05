@@ -1,4 +1,3 @@
-#include <typeinfo>
 #include <iostream>
 #include <algorithm>
 #include <cstdlib>
@@ -71,12 +70,12 @@ int main() {
     cout << endl;
 
 //Textseq
-    cout << "Textseq empty:\n";
+    cout << "Textseq empty:" << endl;
     Textseq T;
     for (auto i : T) {
         cout << i << ' ';
     }
-    cout << "\nTextseq not empty:\n";
+    cout << "\nTextseq not empty:" << endl;
     T = Textseq("Text.txt");
     for (auto i : T) {
         cout << i << ' ';
@@ -90,7 +89,6 @@ int main() {
         cout << *i << ' ';
     }
     cout << endl;
-
     return 0;
 }
 
