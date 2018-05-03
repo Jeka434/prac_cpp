@@ -8,10 +8,11 @@
 #include "Textseq.h"
 
 using std::cout;
+using std::cerr;
 using std::endl;
 
-template <typename It>
-void print_iterated(const Iterated<It>& seq) {
+template <typename It, typename fIt, typename cIt = It>
+void print_iterated(const Iterated<It, fIt, cIt>& seq) {
     for (auto i : seq) {
         cout << i << ' ';
     }
@@ -23,27 +24,6 @@ bool T_f(const char& c);
 time_t random_time();
 
 int main() {
-//Fibonacci
-    cout << "Fibonacci empty:\n";
-    Fibonacci F(0, 0);
-    for (auto i : F) {
-        cout << i << ' ';
-    }
-    cout << "\nFibonacci not empty:\n";
-    F = Fibonacci();
-    for (auto i : F) {
-        cout << i << ' ';
-    }
-    cout << "\n\nFibonacci algorithm function:\n";
-    cout << *std::adjacent_find(F.begin(), F.end());
-    cout << "\n\nFibonacci print function:\n";
-    print_iterated(F);
-    cout << "\nFibonacci filter function:\n";
-    for (auto i = F.filter(F_f); i != F.end(); ++i) {
-        cout << *i << endl;
-    }
-    cout << endl;
-
 //Journal
     cout << "Journal empty:\n";
     Journal J;
@@ -69,26 +49,51 @@ int main() {
     }
     cout << endl;
 
-//Textseq
-    cout << "Textseq empty:" << endl;
-    Textseq T;
-    for (auto i : T) {
+//Fibonacci
+    cout << "Fibonacci empty:\n";
+    Fibonacci F(0, 0);
+    for (auto i : F) {
         cout << i << ' ';
     }
-    cout << "\nTextseq not empty:" << endl;
-    T = Textseq("Text.txt");
-    for (auto i : T) {
+    cout << "\nFibonacci not empty:\n";
+    F = Fibonacci();
+    for (auto i : F) {
         cout << i << ' ';
     }
-    cout << "\nTextseq algorithm function:\n";
-    cout << *std::adjacent_find(T.begin(), T.end());
-    cout << "\n\nTextseq print function:\n";
-    print_iterated(T);
-    cout << "\nTextseq filter function:\n";
-    for (auto i = T.filter(T_f); i != T.end(); ++i) {
-        cout << *i << ' ';
+    cout << "\n\nFibonacci algorithm function:\n";
+    cout << *std::adjacent_find(F.begin(), F.end());
+    cout << "\n\nFibonacci print function:\n";
+    print_iterated(F);
+    cout << "\nFibonacci filter function:\n";
+    for (auto i = F.filter(F_f); i != F.end(); ++i) {
+        cout << *i << endl;
     }
     cout << endl;
+
+//Textseq
+    try {
+        cout << "Textseq empty:" << endl;
+        Textseq T;
+        for (auto i : T) {
+            cout << i << ' ';
+        }
+        cout << "\nTextseq not empty:" << endl;
+        T = Textseq("aaa.txt");
+        for (auto i : T) {
+            cout << i << ' ';
+        }
+        cout << "\nTextseq algorithm function:\n";
+        cout << *std::adjacent_find(T.begin(), T.end());
+        cout << "\n\nTextseq print function:\n";
+        print_iterated(T);
+        cout << "\nTextseq filter function:\n";
+        for (auto i = T.filter(T_f); i != T.end(); ++i) {
+            cout << *i << ' ';
+        }
+        cout << endl;
+    } catch (std::runtime_error& err) {
+        cerr << err.what() << endl;
+    }
     return 0;
 }
 

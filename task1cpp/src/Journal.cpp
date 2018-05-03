@@ -1,4 +1,6 @@
 #include <ctime>
+#include <functional>
+#include <iostream>
 #include "Iterated.h"
 #include "Journal.h"
 
@@ -16,97 +18,117 @@ std::ostream& operator<<(std::ostream& os, const J_record& rec) {
     return os;
 }
 
-//struct J_list
+//class J_filter_iterator
 
-J_list::J_list(time_t t, const std::string& m) : data(t, m), next(nullptr) {}
+J_filter_iterator::J_filter_iterator(const std::list<J_record>::iterator& i,
+    std::function<bool(const J_filter_iterator::value_type&)> pred) : it(i), predicate(pred) {}
 
-J_list::J_list(const J_list& other) : data(other.data), next(nullptr) {}
-
-J_list& J_list::operator=(const J_list& other) {
-    data = other.data;
-    next = nullptr;
+J_filter_iterator& J_filter_iterator::operator++() {
+    auto i = it;
+    ++i;
+    do {
+        ++i;
+        ++it;
+    } while (i != it && !predicate(**this));
     return *this;
+}
+
+J_filter_iterator::value_type& J_filter_iterator::operator*() const {
+    return *it;
+}
+
+bool J_filter_iterator::operator==(const J_filter_iterator& other) const {
+    return it == other.it;
+}
+
+bool J_filter_iterator::operator!=(const J_filter_iterator& other) const {
+    return it != other.it;
+}
+
+bool J_filter_iterator::operator==(const J_iterator& other) const {
+    return other == *this;
+}
+
+bool J_filter_iterator::operator!=(const J_iterator& other) const {
+    return other != *this;
+}
+
+bool J_filter_iterator::check(const J_filter_iterator::value_type& rec) const {
+    return predicate(rec);
 }
 
 //class J_iterator
 
-J_iterator::J_iterator(const J_list *p) : ptr(p) {}
+J_iterator::J_iterator(const std::list<J_record>::iterator& i) : it(i) {}
 
 J_iterator& J_iterator::operator++() {
-    if (ptr == nullptr) return *this;
-    do {
-        ptr = ptr->next;
-        if (ptr == nullptr) return *this;
-    } while (!check(**this));
+    ++it;
     return *this;
 }
 
-const J_record& J_iterator::operator*() const {
-    return ptr->data;
+J_record& J_iterator::operator*() const {
+    return *it;
 }
 
-bool J_iterator::operator==(const J_iterator &other) {
-    return (ptr == other.ptr);
+bool J_iterator::operator==(const J_iterator& other) const {
+    return it == other.it;
 }
 
-bool J_iterator::operator!=(const J_iterator &other) {
-    return (ptr != other.ptr);
+bool J_iterator::operator!=(const J_iterator& other) const {
+    return it != other.it;
+}
+
+bool J_iterator::operator==(const J_filter_iterator& other) const {
+    return it == other.it;
+}
+
+bool J_iterator::operator!=(const J_filter_iterator& other) const {
+    return it != other.it;
+}
+
+//class J_const_iterator
+
+J_const_iterator::J_const_iterator(const std::list<J_record>::const_iterator& i) : it(i) {}
+
+J_const_iterator& J_const_iterator::operator++() {
+    ++it;
+    return *this;
+}
+
+const J_record& J_const_iterator::operator*() const {
+    return *it;
+}
+
+bool J_const_iterator::operator==(const J_const_iterator& other) const {
+    return it == other.it;
+}
+
+bool J_const_iterator::operator!=(const J_const_iterator& other) const {
+    return it != other.it;
 }
 
 //class Journal
 
-Journal::Journal() : first(nullptr), last(nullptr) {}
-
-Journal::Journal(const Journal &other) : first(nullptr), last(nullptr) {
-    if (!other.first) return;
-    first = new J_list(*other.first);
-    last = first;
-    const J_list *tmp = other.first->next;
-    while (tmp) {
-        last->next = new J_list(*tmp);
-        last = last->next;
-        tmp = tmp->next;
-    }
-}
-
-Journal::~Journal() {
-    last = nullptr;
-    J_list *tmp = first;
-    while (first) {
-        tmp = first;
-        first = first->next;
-        delete tmp;
-    }
-}
-
-Journal & Journal::operator=(const Journal &other) {
-    this->~Journal();
-    if (!other.first) return *this;
-    first = new J_list(*other.first);
-    last = first;
-    while (last->next) last = last->next;
-    return *this;
-}
+Journal::Journal() : list() {}
 
 Journal::iterator Journal::begin() {
-    return iterator(first);
+    return iterator(list.begin());
 }
 
 Journal::const_iterator Journal::begin() const {
-    return const_iterator(first);
+    return const_iterator(list.begin());
 }
 
 Journal::iterator Journal::end() {
-    return iterator(nullptr);
+    return iterator(list.end());
 }
 
 Journal::const_iterator Journal::end() const {
-    return const_iterator(nullptr);
+    return const_iterator(list.end());
 }
 
-Journal::iterator Journal::filter(predic_t func) {
-    iterator i = this->begin();
-    i.check = func;
+Journal::fiterator Journal::filter(std::function<bool(const Journal::value_type&)> pred) {
+    fiterator i(list.begin(), pred);
     if (!i.check(*i)) {
         ++i;
     }
@@ -114,11 +136,5 @@ Journal::iterator Journal::filter(predic_t func) {
 }
 
 void Journal::push_back(time_t time, const std::string& message) {
-    J_list *tmp = new J_list(time, message);
-    if (last == nullptr) {
-        first = last = tmp;
-        return;
-    }
-    last->next = tmp;
-    last = last->next;
+    list.push_back(J_record(time, message));
 }

@@ -7,34 +7,52 @@
 #include <climits>
 #include <iterator>
 
+class F_iterator;
+
+//Класс итератора для функции filter последовательности списка 2
+class F_filter_iterator : public std::iterator<std::input_iterator_tag, int> {
+    friend class F_iterator;
+public:
+    F_filter_iterator(int n, std::function<bool(const value_type&)>);
+    F_filter_iterator& operator++();
+    value_type operator*();
+    bool operator==(const F_filter_iterator&) const;
+    bool operator!=(const F_filter_iterator&) const;
+    bool operator==(const F_iterator&) const;
+    bool operator!=(const F_iterator&) const;
+    bool check(const value_type&) const;
+private:
+    int prev;
+    int cur;
+    std::function<bool(const value_type&)> predicate;
+};
+
 //Класс итератора для последовательности списка 2
 class F_iterator : public std::iterator<std::input_iterator_tag, int> {
 public:
-    typedef bool (*predic_t)(const int&);
-
-    predic_t check = [](const int&) { return true; };
-
     F_iterator(int n);
-    F_iterator(int pr, int cu);
     F_iterator& operator++();
-    int operator*();
-    bool operator==(const F_iterator&);
-    bool operator!=(const F_iterator&);
+    value_type operator*();
+    bool operator==(const F_iterator&) const;
+    bool operator!=(const F_iterator&) const;
+    bool operator==(const F_filter_iterator&) const;
+    bool operator!=(const F_filter_iterator&) const;
 private:
     int prev;
     int cur;
 };
 
+
+
 //Класс последовательности списка 2
-class Fibonacci : public Iterated<F_iterator> {
+class Fibonacci : public Iterated<F_iterator, F_filter_iterator> {
 public:
     Fibonacci(int count = INT_MAX, int from = 0);
-    ~Fibonacci();
     iterator begin();
     const_iterator begin() const;
     iterator end();
     const_iterator end() const;
-    iterator filter(predic_t);
+    fiterator filter(std::function<bool(const value_type&)>);
 private:
     int n;
     int m;

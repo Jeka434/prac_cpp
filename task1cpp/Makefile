@@ -15,15 +15,15 @@ CFLAGS = -O2 -Wall -Werror -Wformat-security -Wignored-qualifiers -Winit-self -W
 
 all: $(TARGET)
 $(TARGET): $(OBJECTS:%=$(OBJDIR)%)
-	$(CC) -o $@ $(CFLAGS) $(OBJECTS:%=$(OBJDIR)%)
+	$(CC) -o $@ -g $(CFLAGS) $(OBJECTS:%=$(OBJDIR)%)
 
 $(OBJDIR)%.o: $(SRCDIR)%.cpp
-	$(CC) -o $@ -c $(CFLAGS) -I $(INCDIR) $<
+	$(CC) -o $@ -c -g $(CFLAGS) -I $(INCDIR) $<
 
 output:
 	mkdir output
 test: $(TARGET) output
-	./$(TARGET) 1>output/stdout 2>output/stderr
+	valgrind ./$(TARGET) 1>output/stdout 2>output/stderr
 stderr:
 	less output/stderr
 stdout:
